@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Genesis Health Assessment</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Warm, exclusive forest + true premium gold */
+    --forest-deep: #04160e;     /* deepest backdrop */
+    --forest: #0a2417;          /* card base */
+    --forest-soft: #0f3221;     /* raised surfaces */
+    --gold-1: #b88a2e;          /* deep antique gold */
+    --gold-2: #d9b45a;          /* core gold */
+    --gold-3: #f1d693;          /* light champagne highlight */
+    --gold-line: rgba(217,180,90,0.32);
+    --ink: #f7f3ea;             /* warm white text */
+    --ink-soft: rgba(247,243,234,0.72);
+    --ink-mute: rgba(247,243,234,0.45);
+  }
+  * { -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(120% 80% at 50% -10%, #103a26 0%, var(--forest-deep) 55%),
+      var(--forest-deep);
+    background-attachment: fixed;
+  }
+  .display { font-family: 'Cormorant Garamond', serif; }
+  .gold-text {
+    background: linear-gradient(100deg, var(--gold-1), var(--gold-3) 45%, var(--gold-2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .gold-fill {
+    background: linear-gradient(135deg, var(--gold-1), var(--gold-2) 55%, var(--gold-3));
+    color: #2a1c05;
+  }
+  .gold-fill:hover { filter: brightness(1.06); }
+  .hairline { border: 1px solid var(--gold-line); }
+
+  /* screen transitions */
+  .screen { display: none; }
+  .screen.active { display: block; animation: rise 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  .screen.leaving { animation: sink 0.32s ease forwards; }
+  @keyframes sink { from { opacity: 1; } to { opacity: 0; transform: translateY(-12px); } }
+
+  .bar-fill { transition: width 0.9s cubic-bezier(0.22,1,0.36,1); }
+  .progress-fill { transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
+
+  /* option cards */
+  .opt {
+    transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
+    border: 1px solid rgba(217,180,90,0.22);
+    background: linear-gradient(180deg, rgba(217,180,90,0.03), rgba(0,0,0,0.12));
+  }
+  .opt:hover { border-color: var(--gold-2); transform: translateY(-2px); box-shadow: 0 10px 30px -12px rgba(217,180,90,0.35); }
+  .opt.selected { border-color: var(--gold-2); background: linear-gradient(180deg, rgba(217,180,90,0.12), rgba(217,180,90,0.04)); }
+  .opt .dot { transition: all 0.22s ease; }
+  .opt:hover .dot, .opt.selected .dot { border-color: var(--gold-2); }
+  .opt.selected .dot { background: linear-gradient(135deg, var(--gold-2), var(--gold-3)); }
+
+  .scale-btn { transition: all 0.18s ease; border: 1px solid rgba(217,180,90,0.28); }
+  .scale-btn:hover { border-color: var(--gold-2); transform: translateY(-2px); }
+  .scale-btn.selected { background: linear-gradient(135deg, var(--gold-1), var(--gold-3)); color: #2a1c05; border-color: var(--gold-2); font-weight: 600; }
+
+  input::placeholder { color: var(--ink-mute); }
+  input { transition: all 0.2s ease; }
+  input:focus { outline: none; border-color: var(--gold-2); box-shadow: 0 0 0 3px rgba(217,180,90,0.14); }
+
+  .card { background: linear-gradient(180deg, var(--forest-soft), var(--forest)); }
+  .vignette { box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 30px 80px -40px rgba(0,0,0,0.8); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .screen, .screen.active, .screen.leaving, .bar-fill, .progress-fill, .opt, .scale-btn, input {
+      animation: none !important; transition: none !important;
+    }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ===== CONFIG ===== -->
+<script>
+  const N8N_WEBHOOK_URL = "https://godhealth.app.n8n.cloud/webhook/355f9b51-9b13-4ff7-8f63-2761e8bf1cda";
+  const CALENDLY_URL = "https://calendly.com/YOUR-LINK/premium-strategy-session";
+</script>
+
+<!-- ===== PROGRESS BAR ===== -->
+<div class="fixed top-0 left-0 w-full h-[3px] z-50" style="background: rgba(0,0,0,0.4);">
+  <div id="progressBar" class="progress-fill h-full" style="width:0%; background: linear-gradient(90deg, var(--gold-1), var(--gold-3));"></div>
+</div>
+
+<div class="max-w-2xl mx-auto px-5 py-12 sm:py-20">
+
+  <!-- ================= SCREEN 1: REGISTRATION ================= -->
+  <section id="screen-reg" class="screen active">
+    <div class="text-center mb-10">
+      <div class="flex justify-center mb-5">
+        <svg width="34" height="46" viewBox="0 0 34 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="crossGold" x1="0" y1="0" x2="34" y2="46" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#b88a2e"/>
+              <stop offset="0.5" stop-color="#f1d693"/>
+              <stop offset="1" stop-color="#d9b45a"/>
+            </linearGradient>
+          </defs>
+          <rect x="13" y="0" width="8" height="46" rx="2" fill="url(#crossGold)"/>
+          <rect x="0" y="12" width="34" height="8" rx="2" fill="url(#crossGold)"/>
+        </svg>
+      </div>
+      <p class="gold-text tracking-[0.4em] text-[11px] sm:text-xs font-semibold mb-5">GODHEALTH</p>
+      <h1 class="display text-5xl sm:text-6xl font-bold leading-[1.05] gold-text">The Genesis<br>Health Assessment</h1>
+      <div class="flex items-center justify-center gap-3 my-6">
+        <span class="block h-px w-10" style="background: var(--gold-line);"></span>
+        <span class="gold-text text-xs tracking-[0.2em]">✦</span>
+        <span class="block h-px w-10" style="background: var(--gold-line);"></span>
+      </div>
+      <p class="display text-xl sm:text-2xl italic" style="color: var(--ink-soft);">The Biblical &amp; Biochemical Scan to reveal your Temple's hidden growth areas.</p>
+      <p class="text-[17px] leading-relaxed max-w-md mx-auto mt-5" style="color: var(--ink);">
+        In just 5 minutes, discover exactly where your <span class="gold-text font-semibold">Physical</span>, <span class="gold-text font-semibold">Mental</span>, and <span class="gold-text font-semibold">Spiritual</span> health stand today — and receive a personalized roadmap to step into the strongest, most aligned version of the person God created you to be.
+      </p>
+      <div class="mt-7 max-w-md mx-auto">
+        <p class="display italic text-[18px] leading-snug" style="color: var(--ink);">"Beloved, I wish above all things that thou mayest prosper and be in health, even as thy soul prospereth."</p>
+        <p class="gold-text text-[12px] font-semibold tracking-[0.12em] mt-2">3 John 1:2 (KJV)</p>
+      </div>
+    </div>
+
+    <div class="card hairline rounded-3xl p-7 sm:p-9 vignette">
+      <p class="text-center mb-7" style="color: var(--ink-soft);">Enter your details to begin. Your personalized report is composed the moment you finish.</p>
+      <div class="space-y-5">
+        <div>
+          <label class="block text-[13px] gold-text mb-2 font-medium tracking-wide">FIRST NAME</label>
+          <input id="regName" type="text" placeholder="Your first name" class="w-full rounded-2xl px-5 py-4 text-base hairline" style="background: rgba(0,0,0,0.22); color: var(--ink);">
+        </div>
+        <div>
+          <label class="block text-[13px] gold-text mb-2 font-medium tracking-wide">EMAIL ADDRESS</label>
+          <input id="regEmail" type="email" placeholder="you@email.com" class="w-full rounded-2xl px-5 py-4 text-base hairline" style="background: rgba(0,0,0,0.22); color: var(--ink);">
+        </div>
+        <div>
+          <label class="block text-[13px] gold-text mb-2 font-medium tracking-wide">PHONE NUMBER</label>
+          <input id="regPhone" type="tel" placeholder="+31 6 12345678" class="w-full rounded-2xl px-5 py-4 text-base hairline" style="background: rgba(0,0,0,0.22); color: var(--ink);">
+        </div>
+      </div>
+      <p id="regError" class="text-red-300 text-sm mt-4 hidden"></p>
+      <button id="startBtn" class="gold-fill w-full mt-7 font-semibold text-lg py-4 rounded-2xl transition-all shadow-xl" style="box-shadow: 0 18px 40px -18px rgba(217,180,90,0.6);">
+        Start Assessment
+      </button>
+      <p class="text-center mt-5 text-xs" style="color: var(--ink-mute);">15 quick questions · about 5 minutes · your data stays private</p>
+    </div>
+  </section>
+
+  <!-- ================= QUESTION SCREENS ================= -->
+  <div id="quizContainer"></div>
+
+  <!-- ================= REPORT ================= -->
+  <section id="screen-report" class="screen"></section>
+
+</div>
+
+<script>
+/* ============================================================
+   QUESTION DATA
+   ============================================================ */
+const QUESTIONS = [
+  { id:"q1", pillars:["spiritual"],
+    title:"How is your daily walk with God right now?",
+    verse:{ ref:"John 15:5", text:"I am the vine, ye are the branches: He that abideth in me, and I in him, the same bringeth forth much fruit: for without me ye can do nothing." },
+    options:[
+      {pts:1,text:"I feel far from God. I rarely pray or read His Word, and my faith feels distant."},
+      {pts:2,text:"I believe in Jesus, but my prayer life and time in the Word are inconsistent."},
+      {pts:3,text:"I pray and read the Bible often, but not yet as a steady daily rhythm."},
+      {pts:4,text:"Every day I am grounded in the Word, in prayer, and in a holy walk with Jesus."}
+    ]},
+  { id:"q2", pillars:["mental","spiritual"],
+    title:"When a setback or hard moment hits, what happens to your faith?",
+    verse:{ ref:"Romans 5:3-4", text:"Tribulation worketh patience; And patience, experience; and experience, hope." },
+    options:[
+      {pts:1,text:"I pull away from God and lose hope. The setback takes over."},
+      {pts:2,text:"I pray for help, but I still feel shaken and easily discouraged."},
+      {pts:3,text:"I lean on God and recover, though it takes me a while to find my footing."},
+      {pts:4,text:"I stay anchored in God. Hard moments grow my faith instead of breaking it."}
+    ]},
+  { id:"q3", pillars:["physical"],
+    title:"How healthy are your eating habits and food cravings?",
+    verse:{ ref:"1 Corinthians 10:31", text:"Whether therefore ye eat, or drink, or whatsoever ye do, do all to the glory of God." },
+    options:[
+      {pts:1,text:"I eat mostly processed food and feel out of control with my cravings."},
+      {pts:2,text:"I want to eat clean, but I lack structure and often fall back into old habits."},
+      {pts:3,text:"I eat fairly healthy whole foods, but still get energy crashes or cravings."},
+      {pts:4,text:"I eat mostly God-made whole foods and feel in control of my cravings."}
+    ]},
+  { id:"q4", pillars:["physical"],
+    title:"How active are you day to day?",
+    verse:{ ref:"1 Timothy 4:8", text:"For bodily exercise profiteth little: but godliness is profitable unto all things." },
+    options:[
+      {pts:1,text:"I rarely move or exercise. I sit most of the day."},
+      {pts:2,text:"I try to exercise sometimes, but I quickly lose motivation."},
+      {pts:3,text:"I move regularly, but I don't yet have a consistent training routine."},
+      {pts:4,text:"I move daily, hit my steps, and follow a steady training routine."}
+    ]},
+  { id:"q5", pillars:["mental","physical"],
+    title:"How do you feel about your weight and body right now?",
+    verse:{ ref:"1 Corinthians 6:19", text:"What? know ye not that your body is the temple of the Holy Ghost which is in you?" },
+    options:[
+      {pts:1,text:"I am carrying a lot of extra weight and often feel physical pain or low energy."},
+      {pts:2,text:"My weight hurts my confidence, and I struggle to stay consistent."},
+      {pts:3,text:"My weight is fairly stable, but I'd like more strength and muscle tone."},
+      {pts:4,text:"I am at a healthy weight and feel lean, strong, and energetic."}
+    ]},
+  { id:"q6", pillars:["mental","physical"],
+    title:"How well do you sleep and recover?",
+    verse:{ ref:"Psalm 4:8", text:"I will both lay me down in peace, and sleep: for thou, LORD, only makest me dwell in safety." },
+    options:[
+      {pts:1,text:"I'm always tired. I sleep badly and wake up exhausted."},
+      {pts:2,text:"My sleep is unpredictable and my mind often races at night."},
+      {pts:3,text:"I sleep okay, but I don't have a real recovery routine yet."},
+      {pts:4,text:"I sleep well on a steady rhythm and wake up rested and energized."}
+    ]},
+  { id:"q7", pillars:["mental"],
+    title:"How well do you handle stress and your thoughts?",
+    verse:{ ref:"Philippians 4:6-7", text:"Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God." },
+    options:[
+      {pts:1,text:"I feel overwhelmed and anxious most of the time."},
+      {pts:2,text:"I worry a lot and find it hard to quiet my mind."},
+      {pts:3,text:"I manage stress fairly well, but it still gets the better of me at times."},
+      {pts:4,text:"I stay calm and clear-minded, and I bring my worries to God."}
+    ]},
+  { id:"q8", pillars:["mental","spiritual"],
+    title:"How much do the people around you support your growth?",
+    verse:{ ref:"Ecclesiastes 4:9-10", text:"Two are better than one; because they have a good reward for their labour. For if they fall, the one will lift up his fellow." },
+    options:[
+      {pts:1,text:"I fight alone. No one really holds me accountable."},
+      {pts:2,text:"People love me, but no one pushes me to grow or keeps me accountable."},
+      {pts:3,text:"I have some support, but I tend to hide my struggles from others."},
+      {pts:4,text:"I have a strong circle and a partner who keeps me accountable."}
+    ]},
+  { id:"q9", pillars:["spiritual","mental","physical"],
+    title:"How is fasting part of your life?",
+    verse:{ ref:"Matthew 6:17-18", text:"But thou, when thou fastest, anoint thine head, and wash thy face; That thou appear not unto men to fast." },
+    options:[
+      {pts:1,text:"I never fast. The idea feels too hard."},
+      {pts:2,text:"I've tried fasting, but I can't keep it up."},
+      {pts:3,text:"I fast now and then, but not in a structured way."},
+      {pts:4,text:"I fast regularly to renew my body, sharpen my mind, and draw close to God."}
+    ]},
+  { id:"q11", pillars:["physical"],
+    title:"How well do you stay hydrated each day?",
+    verse:{ ref:"John 7:38", text:"He that believeth on me, as the scripture hath said, out of his belly shall flow rivers of living water." },
+    options:[
+      {pts:1,text:"I rarely drink water. Mostly coffee, soda, or sugary drinks."},
+      {pts:2,text:"I know I should drink more water, but I often forget."},
+      {pts:3,text:"I drink water most days, but not always enough."},
+      {pts:4,text:"I drink plenty of clean water every day and feel the difference."}
+    ]},
+  { id:"q12", pillars:["physical","mental"],
+    title:"How much time do you spend outdoors in nature?",
+    verse:{ ref:"Psalm 19:1", text:"The heavens declare the glory of God; and the firmament sheweth his handywork." },
+    options:[
+      {pts:1,text:"Almost never. I'm indoors nearly all day."},
+      {pts:2,text:"Once in a while, but it's not a real habit."},
+      {pts:3,text:"I get outside fairly often, but not every day."},
+      {pts:4,text:"I spend time in nature daily and it refreshes my body and mind."}
+    ]},
+  { id:"q13", pillars:["physical","mental"],
+    title:"How steady is your daily rhythm — waking, eating, and sleeping?",
+    verse:{ ref:"Ecclesiastes 3:1", text:"To every thing there is a season, and a time to every purpose under the heaven." },
+    options:[
+      {pts:1,text:"My days have no rhythm. I sleep and eat at random times."},
+      {pts:2,text:"I try to keep a routine, but it falls apart easily."},
+      {pts:3,text:"I have a decent rhythm, but it's not fully consistent."},
+      {pts:4,text:"I wake, eat, and sleep on a steady daily rhythm that keeps me strong."}
+    ]},
+  { id:"q14", pillars:["physical","mental"],
+    title:"Do you use any simple tools to boost your body and mind?",
+    verse:{ ref:"Proverbs 18:15", text:"The heart of the prudent getteth knowledge; and the ear of the wise seeketh knowledge." },
+    options:[
+      {pts:1,text:"No, I don't use anything like that."},
+      {pts:2,text:"I've heard of things like cold showers or breathing, but don't use them."},
+      {pts:3,text:"I try a few habits like cold water or breathwork now and then."},
+      {pts:4,text:"I regularly use tools like cold exposure, sunlight, or breathwork to feel my best."}
+    ]},
+  { id:"q15", pillars:["mental","spiritual"],
+    title:"How often do you serve others and spend time with loved ones?",
+    verse:{ ref:"Galatians 5:13", text:"By love serve one another." },
+    options:[
+      {pts:1,text:"Rarely. I feel isolated and disconnected from others."},
+      {pts:2,text:"I want deeper connection, but life keeps getting in the way."},
+      {pts:3,text:"I connect and serve sometimes, but not as much as I'd like."},
+      {pts:4,text:"I regularly serve others and invest real time in the people I love."}
+    ]},
+  { id:"q10", pillar:"scale",
+    title:"On a scale of 1 to 10, how alive and aligned do you feel today in body, soul, and spirit?",
+    verse:{ ref:"1 Thessalonians 5:23", text:"And the very God of peace sanctify you wholly; and I pray God your whole spirit and soul and body be preserved blameless unto the coming of our Lord Jesus Christ." },
+    scaleTexts:{
+      1:{label:"Running on Empty",text:"You feel completely drained — body, soul, and spirit. Most days feel like just getting through."},
+      2:{label:"Barely Holding On",text:"You are exhausted and disconnected. You sense something has to change, but don't know where to start."},
+      3:{label:"Heavy and Weary",text:"The weight you carry is heavy. You see who you could be, but old habits keep pulling you down."},
+      4:{label:"Stuck in the Struggle",text:"You are fighting, but losing more battles than you win. Your discipline fades before it sticks."},
+      5:{label:"Treading Water",text:"You are right in the middle — not sinking, not rising. You know you were made for more than this."},
+      6:{label:"Finding Your Footing",text:"You are starting to gain traction. Some things work, but you're not fully consistent yet."},
+      7:{label:"Building Momentum",text:"You feel real progress and growing strength, with a few leaks still holding you back."},
+      8:{label:"Strong and Steady",text:"You are largely aligned and energized. Now it's about closing the final gaps."},
+      9:{label:"Thriving with Purpose",text:"You feel alive, disciplined, and connected to your calling, ready to grow even further."},
+      10:{label:"Fully Alive",text:"Body, mind, and spirit move as one. You feel unbreakable — ready to lead others into the same freedom."}
+    }}
+];
+
+const PILLAR_META = {
+  spiritual:{name:"Spiritual Vessel", short:"Spiritual"},
+  mental:{name:"Mental Shield", short:"Mental"},
+  physical:{name:"Physical Fortress", short:"Physical"}
+};
+
+/* ============================================================ STATE ============================================================ */
+const state = { lead:{}, answers:{}, current:0 };
+
+/* ============================================================ HELPERS ============================================================ */
+function setProgress(){
+  const total = QUESTIONS.length;
+  const done = state.current === 0 ? 0 : state.current;
+  document.getElementById("progressBar").style.width = (done/total*100) + "%";
+}
+
+function transitionTo(renderFn){
+  const active = document.querySelector(".screen.active");
+  if(active){
+    active.classList.add("leaving");
+    setTimeout(() => {
+      active.classList.remove("active","leaving");
+      renderFn();
+      window.scrollTo({top:0,behavior:"smooth"});
+    }, 300);
+  } else {
+    renderFn();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+}
+
+function fireWebhook(payload){
+  try {
+    fetch(N8N_WEBHOOK_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),
+      keepalive:true
+    }).catch(()=>{});
+  } catch(e){}
+}
+
+/* ============================================================ REGISTRATION ============================================================ */
+document.getElementById("startBtn").addEventListener("click", () => {
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const phone = document.getElementById("regPhone").value.trim();
+  const err = document.getElementById("regError");
+  const showErr = m => { err.textContent = m; err.classList.remove("hidden"); };
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const phoneOk = /^[+0-9][0-9\s\-()]{6,}$/.test(phone) && /^[+0-9\s\-()]+$/.test(phone);
+
+  if(!name) return showErr("Please enter your first name.");
+  if(!emailOk) return showErr("Please enter a valid email address.");
+  if(!phoneOk) return showErr("Please enter a valid phone number (numbers and + only).");
+  err.classList.add("hidden");
+
+  state.lead = { timestamp:new Date().toISOString(), name, email, phone };
+  fireWebhook({ event:"lead_registration", ...state.lead });
+
+  state.current = 1;
+  transitionTo(renderQuestion);
+});
+
+/* ============================================================ QUESTION RENDERING ============================================================ */
+function pillarTagFor(q){
+  if(q.pillar === "scale") return "Final Alignment";
+  if(q.id === "q9") return "Body · Mind · Spirit";
+  return q.pillars.map(p=> PILLAR_META[p].short).join(" + ");
+}
+
+function renderQuestion(){
+  setProgress();
+  const q = QUESTIONS[state.current - 1];
+  const container = document.getElementById("quizContainer");
+  const pillarTag = pillarTagFor(q);
+
+  let body;
+  if(q.pillar === "scale"){
+    body = renderScale(q);
+  } else {
+    body = `<div class="space-y-3.5">` + q.options.map((o,i)=>`
+      <button class="opt w-full text-left rounded-2xl px-5 py-4 flex gap-4 items-start" data-pts="${o.pts}" data-idx="${i}">
+        <span class="dot shrink-0 mt-1 w-4 h-4 rounded-full border" style="border-color: rgba(217,180,90,0.4);"></span>
+        <span class="leading-snug text-[15px]" style="color: var(--ink-soft);">${o.text}</span>
+      </button>`).join("") + `</div>`;
+  }
+
+  const backBtn = state.current > 1
+    ? `<button id="backBtn" class="mt-8 text-sm transition-colors flex items-center gap-2 mx-auto" style="color: var(--ink-mute);">
+         <span style="font-size:16px;">←</span> Go back
+       </button>` : ``;
+
+  // Replace contents entirely so previous question is gone from the DOM
+  container.innerHTML = `
+    <section class="screen active">
+      <div class="flex items-center justify-between mb-6">
+        <span class="gold-text text-[11px] font-semibold tracking-[0.28em] uppercase">${pillarTag}</span>
+        <span class="text-sm" style="color: var(--ink-mute);">${state.current} <span style="color: var(--gold-2);">/</span> ${QUESTIONS.length}</span>
+      </div>
+      <h2 class="display text-[26px] sm:text-[34px] font-semibold leading-[1.18] mb-4" style="color: var(--ink);">${q.title}</h2>
+      ${q.verse ? `<div class="mb-8 pl-4" style="border-left: 2px solid var(--gold-line);">
+        <p class="display italic text-[17px] leading-snug" style="color: var(--ink-soft);">"${q.verse.text}"</p>
+        <p class="gold-text text-[12px] font-semibold tracking-[0.12em] mt-1.5">${q.verse.ref} (KJV)</p>
+      </div>` : ``}
+      ${body}
+      ${backBtn}
+    </section>`;
+
+  if(q.pillar !== "scale"){
+    container.querySelectorAll(".opt").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const idx = +btn.dataset.idx;
+        state.answers[q.id] = { pts:+btn.dataset.pts, text:q.options[idx].text };
+        btn.classList.add("selected");
+        setTimeout(()=> advance(), 240);
+      });
+    });
+  }
+  const back = document.getElementById("backBtn");
+  if(back) back.addEventListener("click", ()=>{ state.current--; transitionTo(renderQuestion); });
+}
+
+function renderScale(q){
+  let grid = `<div class="grid grid-cols-5 gap-2.5 mb-5">`;
+  for(let n=1;n<=10;n++){
+    grid += `<button class="scale-btn rounded-2xl py-4 text-lg font-medium" data-val="${n}" style="color: var(--ink);">${n}</button>`;
+  }
+  grid += `</div>`;
+  grid += `<div id="scaleLabel" class="min-h-[80px] rounded-2xl px-5 py-4 text-center hairline" style="background: rgba(0,0,0,0.2);">
+             <p class="text-sm" style="color: var(--ink-mute);">Select a number to see what it means.</p>
+           </div>`;
+  setTimeout(()=>{
+    const labelBox = document.getElementById("scaleLabel");
+    document.querySelectorAll(".scale-btn").forEach(b=>{
+      const val = +b.dataset.val;
+      const showLabel = ()=>{
+        const m = q.scaleTexts[val];
+        labelBox.innerHTML = `<p class="gold-text font-semibold mb-1 tracking-wide">${val} · ${m.label}</p><p class="text-sm leading-snug" style="color: var(--ink-soft);">${m.text}</p>`;
+      };
+      b.addEventListener("mouseenter", showLabel);
+      b.addEventListener("click", ()=>{
+        document.querySelectorAll(".scale-btn").forEach(x=>x.classList.remove("selected"));
+        b.classList.add("selected");
+        showLabel();
+        state.answers.q10 = { value:val, pts:val };
+        setTimeout(()=> finishAssessment(), 420);
+      });
+    });
+  },0);
+  return grid;
+}
+
+function advance(){
+  if(state.current < QUESTIONS.length){
+    state.current++;
+    transitionTo(renderQuestion);
+  }
+}
+
+/* ============================================================ SCORING ============================================================ */
+function computeScores(){
+  const pp = {spiritual:0,mental:0,physical:0};   // earned points per pillar
+  const pmax = {spiritual:0,mental:0,physical:0}; // max possible per pillar
+  QUESTIONS.forEach(q=>{
+    if(q.pillar === "scale") return;
+    q.pillars.forEach(p=>{
+      pp[p]   += state.answers[q.id].pts;  // each question adds its points to every pillar it serves
+      pmax[p] += 4;                        // and 4 is the max per question
+    });
+  });
+  const scalePts = state.answers.q10.pts;  // 1-10
+
+  // Grand total: every question's points counted once + the scale
+  let baseTotal = 0, baseMax = 0;
+  QUESTIONS.forEach(q=>{
+    if(q.pillar === "scale") return;
+    baseTotal += state.answers[q.id].pts;
+    baseMax   += 4;
+  });
+  const totalPts = baseTotal + scalePts;
+  const grandMax = baseMax + 10;
+  const grandPct = Math.round((totalPts/grandMax)*100);
+
+  const leaks = {};
+  Object.keys(pp).forEach(p=> leaks[p] = Math.round(100 - (pp[p]/pmax[p])*100));
+  return { pillarPts:pp, pillarMax:pmax, scalePts, totalPts, grandMax, grandPct, leaks };
+}
+
+/* ============================================================ COPY GENERATION ============================================================ */
+function tier(pct){ if(pct<30) return "severe"; if(pct<50) return "survival"; if(pct<80) return "willpower"; return "warrior"; }
+
+/* Displayed name + one-line descriptor under the grand score — 5 distinct bands */
+function tierLabel(pct){
+  if(pct < 20)  return { name:"The Broken Vessel",       line:"Running on empty, far from the design God built you for." };
+  if(pct < 40)  return { name:"The Weary Wanderer",      line:"Surviving the day, but disconnected from your strength and purpose." };
+  if(pct < 60)  return { name:"The Divided Warrior",     line:"Fighting hard in bursts, held back by a life without structure." };
+  if(pct < 80)  return { name:"The Rising Steward",      line:"Disciplined and growing, with real ground still left to claim." };
+  return            { name:"The Anointed Champion",  line:"Body, mind, and spirit aligned — built to lead and leave a legacy." };
+}
+
+/* Layered insight per pillar, keyed by how deep the leak runs */
+const PILLAR_INSIGHT = {
+  spiritual: {
+    strong: "Your faith is the rudder of your life, not an afterthought — and that anchor is the rarest, most valuable thing you own.",
+    weak: "Your connection to God has slipped to the background, and when the spiritual center weakens, everything downstream — discipline, peace, purpose — loses its grip.",
+    deep: "This is the root leak. When the spirit runs dry, no amount of dieting or training will hold, because the body always follows where the spirit leads. Everything you're struggling with physically is downstream of this disconnection — and that's actually good news, because it means there is one true source to return to.",
+    growing: "Your faith is present but not yet the daily anchor it could be. You reach for God in the storms but haven't built the quiet, daily rhythm that keeps the storms from controlling you in the first place."
+  },
+  mental: {
+    strong: "Your mind recovers and your environment backs you, so setbacks become data instead of disasters.",
+    weak: "Your mind is carrying more than it can recover from, and without rest and the right people around you, every setback hits twice as hard.",
+    deep: "You are running in a constant state of fight-or-flight, and a nervous system stuck on high alert cannot heal, cannot rest, and cannot make wise decisions. This is why discipline feels impossible right now — it isn't weakness, it's biology. Your body is too depleted to obey your intentions, and you are very likely trying to do this alone.",
+    growing: "Your recovery and your support system are partly in place, but inconsistent. On good weeks you cope well; on hard weeks you retreat inward and carry it silently. The missing piece is structure around rest and one person who truly has your back."
+  },
+  physical: {
+    strong: "Your body is a disciplined instrument that serves your calling rather than draining it.",
+    weak: "Your body has become a source of friction instead of fuel, and that physical drag quietly steals the energy your purpose needs.",
+    deep: "Your body is sounding an alarm you can no longer ignore. The fatigue, the weight, the cravings — these are not random; they are the predictable result of a system without structure, and they are stealing the energy your calling requires. The temple is meant to house your spirit, not exhaust it.",
+    growing: "You've built some healthy ground physically, but the structure isn't complete. You eat reasonably well or move sometimes, yet energy crashes, missing muscle, or inconsistent habits keep your body from becoming the engine it's designed to be."
+  }
+};
+
+/* A closing KJV verse matched to the season the person is in */
+function tierVerse(t){
+  return {
+    severe:    { ref:"Joel 2:25", text:"And I will restore to you the years that the locust hath eaten." },
+    survival:  { ref:"Isaiah 40:31", text:"But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles." },
+    willpower: { ref:"Philippians 4:13", text:"I can do all things through Christ which strengtheneth me." },
+    warrior:   { ref:"1 Corinthians 9:24", text:"Know ye not that they which run in a race run all, but one receiveth the prize? So run, that ye may obtain." }
+  }[t];
+}
+
+/* Reads the Q7 self-assessment into a short, personal line */
+function alignmentRead(score, name){
+  if(score <= 2) return `When you rated your own alignment a <span class="gold-text font-semibold">${score} out of 10</span>, you told the truth most people are afraid to admit — you feel almost completely empty right now. Honor that honesty; it is the exact starting point God can work with.`;
+  if(score <= 4) return `You rated your own alignment a <span class="gold-text font-semibold">${score} out of 10</span> — a quiet admission that you are running low and you know it. That self-awareness is rarer and more powerful than you realize.`;
+  if(score <= 6) return `You rated your own alignment a <span class="gold-text font-semibold">${score} out of 10</span> — squarely in the middle. You are functional, but you can feel the gap between how you live and how you were made to live, and that gap is your invitation.`;
+  if(score <= 8) return `You rated your own alignment a <span class="gold-text font-semibold">${score} out of 10</span> — proof that you're already living with real strength, while sensing there's another level you haven't reached yet.`;
+  return `You rated your own alignment a <span class="gold-text font-semibold">${score} out of 10</span> — you feel genuinely alive and aligned. The call now is to protect this and pour it into others.`;
+}
+
+function grandDiagnosis(s){
+  const name = state.lead.name;
+  const t = tier(s.grandPct);
+  const sorted = ["spiritual","mental","physical"].sort((a,b)=> s.leaks[b]-s.leaks[a]);
+  const worst = PILLAR_META[sorted[0]].name;
+  const strongest = PILLAR_META[sorted[2]].name;
+  const worstKey = sorted[0];
+  const strongKey = sorted[2];
+
+  // Paragraph 1 — WHERE THEY STAND (the season they're in)
+  const standMap = {
+    severe: `${name}, right now you are in a season of <span class="gold-text font-semibold">deep depletion</span>. At <span class="gold-text font-semibold">${s.grandPct}%</span>, more is leaking out of your Temple than is coming in — and you don't need a report to tell you that, because you feel it in your energy, your mornings, and your distance from God. This is not a verdict on your worth. It is an honest snapshot of a body, mind, and spirit that have been running on empty for too long.`,
+    survival: `${name}, you are living in <span class="gold-text font-semibold">Survival Mode</span>. At <span class="gold-text font-semibold">${s.grandPct}%</span>, you are keeping your head above water — but every ounce of energy goes to staying afloat instead of moving forward. The danger of this season is how normal it starts to feel: it looks like effort, so you assume it's progress, yet the same battles keep returning.`,
+    willpower: `${name}, you are caught in <span class="gold-text font-semibold">The Willpower Trap</span>. At <span class="gold-text font-semibold">${s.grandPct}%</span>, you are neither lazy nor lost — you know what's right and you fight back after every fall. But you are running your life on willpower, and willpower is a battery, not a power grid. It always drains, and when it does you blame yourself instead of the structure you were never given.`,
+    warrior: `${name}, you are operating as a <span class="gold-text font-semibold">High-Performance Warrior</span>. At <span class="gold-text font-semibold">${s.grandPct}%</span>, your body, mind, and spirit are largely aligned and firing in the same direction — and that is genuinely rare. You have moved past survival and into stewardship; the foundation is built and holding.`
+  };
+
+  // Paragraph 2 — WHO THEY ARE (identity read, deeper based on how severe the worst leak is)
+  const worstLeak = s.leaks[worstKey];
+  let worstInsight;
+  if(worstLeak >= 75) worstInsight = PILLAR_INSIGHT[worstKey].deep;
+  else if(worstLeak >= 50) worstInsight = PILLAR_INSIGHT[worstKey].weak;
+  else if(worstLeak >= 21) worstInsight = PILLAR_INSIGHT[worstKey].growing;
+  else worstInsight = PILLAR_INSIGHT[worstKey].strong;
+
+  const identity = `Beneath the numbers, here is what stands out about you. Your strongest ground is <span class="gold-text font-semibold">${strongest}</span> — ${PILLAR_INSIGHT[strongKey].strong} That strength is not an accident; it is something you can build the rest of your restoration on. But your <span class="gold-text font-semibold">${worst}</span>, leaking at <span class="gold-text font-semibold">${worstLeak}%</span>, is where you are losing the most. ${worstInsight}`;
+
+  // Paragraph 4 — WHAT THIS MEANS FOR YOU (self-assessment + closing scripture)
+  const tv = tierVerse(t);
+  const meaning4 = `${alignmentRead(s.scalePts, name)} Here is the truth your numbers are pointing to: you are not broken, you are leaking — and leaks can be sealed. The distance between where you stand today and the fully restored person God created you to be is not talent or luck; it is a system, applied consistently, with God at the center and the right people beside you.`;
+
+  // Paragraph 3 — WHERE THE GROWTH IS (the lever + the lifelong principle)
+  const growthMap = {
+    severe: `Here is the path forward: you don't fix everything at once — you stop the biggest leak first. Restore your <span class="gold-text font-semibold">${worst}</span> and you will feel the whole system stabilize, because your three pillars are not separate. When one is sealed, it gives the others room to heal. A clean breakdown is the strongest foundation to rebuild on, and the principle that will carry you for life is simple: <span class="gold-text font-semibold">consistency in the small things beats intensity in the rare ones</span>.`,
+    survival: `The way out of survival is not more effort — it's a structure that holds the effort for you. Focus first on your <span class="gold-text font-semibold">${worst}</span>, because that is the leak quietly draining the energy you're working so hard to keep. Lean on your <span class="gold-text font-semibold">${strongest}</span> as the anchor while you rebuild. Carry this for the rest of your life: <span class="gold-text font-semibold">you will never rise above the systems you build, no matter how hard you try inside broken ones.</span>`,
+    willpower: `You are closer than you think — the gap between you and a fully restored Temple is not more trying, it is the right architecture lived consistently. Concentrate your energy on sealing <span class="gold-text font-semibold">${worst}</span> while your <span class="gold-text font-semibold">${strongest}</span> holds the line. The lifelong principle to internalize: <span class="gold-text font-semibold">discipline you have to summon will always fail; design your environment so the right choice is the easy one.</span>`,
+    warrior: `Your work now is not repair, it is <span class="gold-text font-semibold">refinement and legacy</span>. Close the final leak in <span class="gold-text font-semibold">${worst}</span>, then turn private discipline into something that lifts everyone around you. The truth that keeps warriors from sliding back: <span class="gold-text font-semibold">the moment you stop sharpening is the moment you start dulling — so lead others into the battle you've already begun to win.</span>`
+  };
+
+  return `
+    <div class="space-y-6">
+      <div>
+        <p class="gold-text text-[11px] font-semibold tracking-[0.22em] uppercase mb-2">Where you stand</p>
+        <p>${standMap[t]}</p>
+      </div>
+      <div class="pt-1" style="border-top: 1px solid var(--gold-line);">
+        <p class="gold-text text-[11px] font-semibold tracking-[0.22em] uppercase mb-2 mt-5">Who you are</p>
+        <p>${identity}</p>
+      </div>
+      <div class="pt-1" style="border-top: 1px solid var(--gold-line);">
+        <p class="gold-text text-[11px] font-semibold tracking-[0.22em] uppercase mb-2 mt-5">Where you grow</p>
+        <p>${growthMap[t]}</p>
+      </div>
+      <div class="pt-1" style="border-top: 1px solid var(--gold-line);">
+        <p class="gold-text text-[11px] font-semibold tracking-[0.22em] uppercase mb-2 mt-5">What this means for you</p>
+        <p>${meaning4}</p>
+        <div class="mt-5 pl-4" style="border-left: 2px solid var(--gold-2);">
+          <p class="display italic text-[18px] leading-snug" style="color: var(--ink);">"${tv.text}"</p>
+          <p class="gold-text text-[12px] font-semibold tracking-[0.12em] mt-1.5">${tv.ref} (KJV)</p>
+        </div>
+      </div>
+    </div>`;
+}
+
+function pillarParagraph(pillar, leak){
+  const meta = PILLAR_META[pillar];
+  const key = pillar;
+  let lead, meaning, close;
+
+  if(leak>=75){
+    lead = `Your <span class="gold-text font-semibold">${meta.name}</span> is your biggest growth area at <span class="gold-text font-semibold">${leak}%</span> — this is where you have the most room to grow, and where your transformation begins.`;
+    meaning = PILLAR_INSIGHT[key].deep;
+    close = `This is not a willpower problem, it's an unbuilt system — and a system is something that can be installed. Grow here first and you'll feel the others stabilize with it.`;
+  } else if(leak>=50){
+    lead = `Your <span class="gold-text font-semibold">${meta.name}</span> has a large growth area at <span class="gold-text font-semibold">${leak}%</span> and deserves your attention soon, before it holds the rest of you back.`;
+    meaning = PILLAR_INSIGHT[key].weak;
+    close = `Start building here now, while the change is still simple. The cost of waiting is always higher than the cost of acting.`;
+  } else if(leak>=21){
+    lead = `Your <span class="gold-text font-semibold">${meta.name}</span> shows a moderate growth area of <span class="gold-text font-semibold">${leak}%</span> — solid ground with clear room to grow.`;
+    meaning = PILLAR_INSIGHT[key].growing;
+    close = `You don't need to start over here — you need to strengthen what's already working. Small, steady refinements will tip this into a genuine strength.`;
+  } else {
+    lead = `Your <span class="gold-text font-semibold">${meta.name}</span> is strong, with only a <span class="gold-text font-semibold">${leak}%</span> growth area.`;
+    meaning = PILLAR_INSIGHT[key].strong;
+    close = `This is an anchor — build everything else around it, and guard it so it stays strong.`;
+  }
+  return `${lead} ${meaning} ${close}`;
+}
+
+/* ============================================================
+   5 LIFE-CHANGING TIPS  (with the "why it works" explanation)
+   Each maps to a low-scored answer; strong fallbacks fill the rest.
+   ============================================================ */
+/* Tips grouped by pillar, keyed by the questions that feed that pillar.
+   Each pillar has a fallback for when its questions all scored high. */
+const PILLAR_TIPS = {
+  spiritual: {
+    q1: {
+      title: "Win the first 15 minutes with God",
+      action: "Before your phone or coffee, spend 15 minutes in the Word and prayer. Same place, same time, every day.",
+      why: "Your day takes the shape of its first minutes. Give them to God and you anchor your identity before the world can. Distance from God is a slow leak that always starts in the morning."
+    },
+    q2: {
+      title: "Build a verse to stand on in hard moments",
+      action: "Pick one promise from Scripture and memorize it. When a setback hits, speak it out loud before you react.",
+      why: "Setbacks feel overwhelming when you face them with feelings alone. A memorized promise gives your mind solid ground to stand on. Faith grows strongest in the storm, not in the calm."
+    },
+    q8: {
+      title: "Find one brother or sister in faith",
+      action: "Ask one trusted believer to walk with you — to pray for you and check in weekly.",
+      why: "We were never meant to walk with God alone. One faithful companion keeps you accountable and lifts you when you fall. Iron sharpens iron."
+    },
+    q9: {
+      title: "Start with one short weekly fast",
+      action: "Begin with a 16-hour overnight fast once a week, given to God in prayer.",
+      why: "Fasting trains your spirit to lead and your body to follow. It renews the body and draws you close to God at the same time. Start small and let it grow."
+    },
+    q15: {
+      title: "Serve one person this week",
+      action: "Do one intentional act of service for someone, and set aside real time for a loved one.",
+      why: "Faith grows when it's given away. Serving others pulls you out of yourself and into God's heart for people. Connection is where the soul is healed."
+    },
+    fallback: {
+      title: "Pour your faith into someone else",
+      action: "Disciple or encourage one person in their walk with God this month.",
+      why: "Strong faith still fades without renewal. Pouring into others cements your own foundation and turns private strength into lasting legacy."
+    }
+  },
+  physical: {
+    q3: {
+      title: "Remove every barcode from your kitchen",
+      action: "Clear out processed food and replace it with God-made whole foods: meat, eggs, fish, fruit, and vegetables.",
+      why: "Willpower fails at temptation, but your environment decides the outcome long before. You can't lose a battle that never reaches your hand. Processed food is built to override your fullness signals."
+    },
+    q4: {
+      title: "Make a daily walk non-negotiable",
+      action: "Walk 30 minutes every day toward 10,000 steps, ideally outdoors in daylight.",
+      why: "Walking burns fat, lowers stress, and clears your mind without burnout. Daily repeatable action beats rare heroic effort. A body in motion starts to believe change is possible."
+    },
+    q5: {
+      title: "Train your strength two to three times a week",
+      action: "Lift weights or do resistance training 2-3 times weekly, slowly adding more over time.",
+      why: "Muscle is the engine of a healthy body — it controls energy, metabolism, and how strong you stay for life. Strength built now is a gift to your future self."
+    },
+    q6: {
+      title: "Anchor your body with morning sunlight",
+      action: "Get 10 minutes of sunlight in your eyes within an hour of waking, and dim screens 90 minutes before bed.",
+      why: "Morning light tells your body when to wake and when to sleep. Better sleep repairs everything downstream — energy, cravings, and mood. Fix the light and you fix the foundation."
+    },
+    q9: {
+      title: "Use fasting to renew your body",
+      action: "Try one structured fast each week to give your body time to rest and repair.",
+      why: "Fasting lets the body heal, steadies energy, and sharpens focus. It teaches your appetite to obey you instead of ruling you. Discipline in the small builds strength in the large."
+    },
+    q11: {
+      title: "Drink a glass of water first thing",
+      action: "Start every morning with a large glass of water, and keep a bottle with you through the day.",
+      why: "You wake up dehydrated, and even mild dehydration drains energy and focus. Water is the simplest upgrade for your body and mind. Most tiredness is just thirst in disguise."
+    },
+    q12: {
+      title: "Step into nature every day",
+      action: "Get outside for at least 15 minutes of fresh air and natural light, ideally on grass or among trees.",
+      why: "Time in nature lowers stress and lifts your mood within minutes. God's creation restores what screens and walls drain. It's free medicine for body and soul."
+    },
+    q13: {
+      title: "Set fixed wake and sleep times",
+      action: "Wake and sleep at the same time each day, even on weekends, and eat at steady times.",
+      why: "Your body runs on rhythm. Steady timing sharpens energy, digestion, and sleep all at once. A predictable rhythm is the quiet foundation of a strong body."
+    },
+    q14: {
+      title: "Try one simple body-and-mind tool",
+      action: "Add one easy practice: a cold finish to your shower, 5 minutes of deep breathing, or morning sunlight.",
+      why: "Small, natural stressors make your body more resilient. These simple tools boost energy and focus with no cost. Master your biology and everything else gets easier."
+    },
+    fallback: {
+      title: "Guard your physical strength",
+      action: "Keep your training progressive and your whole-food habits consistent, even in busy seasons.",
+      why: "A strong body still declines without upkeep. Consistency in the good weeks protects you in the hard ones. Stewardship is a lifelong rhythm, not a sprint."
+    }
+  },
+  mental: {
+    q2: {
+      title: "Reframe setbacks as data, not defeat",
+      action: "After a hard moment, write down one lesson it taught you instead of replaying the failure.",
+      why: "A setback only defeats you when you treat it as final. Naming the lesson turns pain into progress. What you focus on grows."
+    },
+    q5: {
+      title: "Speak life over your body",
+      action: "Replace harsh self-talk with one true, kind statement about your body and repeat it daily.",
+      why: "How you talk about your body shapes how you treat it. Shame fuels self-sabotage; truth fuels change. Your mind leads where your body follows."
+    },
+    q6: {
+      title: "Build a wind-down routine for real rest",
+      action: "Set a fixed bedtime, dim the lights, and put screens away 90 minutes before sleep.",
+      why: "A racing mind can't recover. A calm wind-down signals your brain it's safe to rest. Deep sleep is where your mind and body repair."
+    },
+    q7: {
+      title: "Hand your worries to God on paper",
+      action: "Each evening, write down what's weighing on you and pray it over to God before bed.",
+      why: "Worry kept inside spins in circles. Naming it and giving it to God breaks the cycle. A quiet mind makes wise decisions."
+    },
+    q8: {
+      title: "Recruit one accountability partner",
+      action: "Tell one trusted person your goal out loud and give them permission to check on you weekly.",
+      why: "A goal kept secret dies in private; one spoken out loud becomes binding. Hidden struggle is where relapse hides. We were never designed to fight alone."
+    },
+    q9: {
+      title: "Use fasting to sharpen your mind",
+      action: "Try a short weekly fast and notice the mental clarity it brings.",
+      why: "Fasting steadies your focus and trains self-control. Mastering your appetite builds discipline that spills into every area. Strength of mind is built, not born."
+    },
+    q12: {
+      title: "Take a daily walk in nature",
+      action: "Step outside for 15 minutes of fresh air and natural surroundings each day.",
+      why: "Nature calms a racing mind faster than almost anything else. Even a short walk outside lowers stress and clears your head. God's creation was made to restore you."
+    },
+    q13: {
+      title: "Anchor your day with a steady rhythm",
+      action: "Keep consistent wake, meal, and sleep times so your mind knows what to expect.",
+      why: "A chaotic schedule keeps your mind on edge. Rhythm creates a sense of safety and control. A steady day makes for a steady mind."
+    },
+    q14: {
+      title: "Use breathwork to reset your mind",
+      action: "When stress rises, take 5 slow breaths — in for 4 seconds, out for 6.",
+      why: "Slow breathing switches your body out of fight-or-flight in seconds. It's a tool you carry everywhere, for free. Calm the breath and you calm the mind."
+    },
+    q15: {
+      title: "Invest real time in people",
+      action: "Schedule one meaningful moment with a loved one and one act of service this week.",
+      why: "Isolation feeds anxiety; connection heals it. Serving and loving others lifts your mind out of its own worries. We are built for one another."
+    },
+    fallback: {
+      title: "Audit your week every Sunday",
+      action: "Spend 10 minutes each Sunday reviewing what worked, what drained you, and what you'll adjust.",
+      why: "What gets measured gets mastered. A weekly review keeps a strong mind sharp and catches small leaks early. Champions don't drift — they audit."
+    }
+  }
+};
+
+/* Which questions feed each pillar (must match the pillars arrays above) */
+const PILLAR_QUESTIONS = {
+  spiritual:["q1","q2","q8","q9","q15"],
+  physical:["q3","q4","q5","q6","q9","q11","q12","q13","q14"],
+  mental:["q2","q5","q6","q7","q8","q9","q12","q13","q14","q15"]
+};
+
+/* Returns up to 2 tips for a pillar: prioritise the questions scored lowest (1-2 pts),
+   then 3-pt questions, then the pillar fallback. Always returns at least one. */
+function tipsForPillar(pillar){
+  const qs = PILLAR_QUESTIONS[pillar];
+  const bank = PILLAR_TIPS[pillar];
+  const tips = [];
+  const CAP = 3;
+  // 1) low-scored questions first (worst first)
+  qs.filter(q=> state.answers[q] && state.answers[q].pts<=2)
+    .sort((a,b)=> state.answers[a].pts - state.answers[b].pts)
+    .forEach(q=>{ if(tips.length<CAP) tips.push(bank[q]); });
+  // 2) mid-scored (3 pts) questions, only if we still have room
+  if(tips.length<CAP){
+    qs.filter(q=> state.answers[q] && state.answers[q].pts===3)
+      .forEach(q=>{ if(tips.length<CAP) tips.push(bank[q]); });
+  }
+  // 3) fallback if still empty (pillar is strong)
+  if(tips.length===0) tips.push(bank.fallback);
+  return tips;
+}
+
+/* ============================================================ BAR COLOR ============================================================ */
+function leakColor(leak){
+  if(leak>=75) return "#d9534f";
+  if(leak>=50) return "#e08a3c";
+  if(leak>=21) return "#d9b45a";
+  return "#4caf6d";
+}
+
+/* ============================================================ FINISH & REPORT ============================================================ */
+function finishAssessment(){
+  const s = computeScores();
+  setProgress();
+
+  fireWebhook({
+    event:"assessment_complete",
+    timestamp:new Date().toISOString(),
+    name:state.lead.name, email:state.lead.email, phone:state.lead.phone,
+    grand_percentage:s.grandPct, total_points:s.totalPts, max_points:s.grandMax,
+    spiritual_leak:s.leaks.spiritual, mental_leak:s.leaks.mental, physical_leak:s.leaks.physical,
+    spiritual_points:s.pillarPts.spiritual, mental_points:s.pillarPts.mental, physical_points:s.pillarPts.physical,
+    alignment_score:s.scalePts,
+    answers:Object.fromEntries(Object.entries(state.answers).map(([k,v])=>[k, v.text||v.value]))
+  });
+
+  const sortedPillars = ["spiritual","mental","physical"].sort((a,b)=> s.leaks[b]-s.leaks[a]);
+  const pillarsHTML = sortedPillars.map(p=>{
+    const leak = s.leaks[p];
+    const color = leakColor(leak);
+    const pillarTips = tipsForPillar(p);
+    const tipsBlock = pillarTips.map(t=>`
+      <div class="mt-4 rounded-xl p-5" style="background: rgba(0,0,0,0.18); border: 1px solid var(--gold-line);">
+        <div class="flex items-start gap-3 mb-2">
+          <span class="gold-text text-base leading-none mt-0.5">✦</span>
+          <h5 class="display text-lg font-semibold leading-snug" style="color: var(--ink);">${t.title}</h5>
+        </div>
+        <p class="text-[14px] leading-relaxed mb-3" style="color: var(--ink);"><span class="gold-text font-semibold">Do this:</span> ${t.action}</p>
+        <p class="text-[13px] leading-relaxed pl-3" style="color: var(--ink-soft); border-left: 2px solid var(--gold-line);"><span class="gold-text font-semibold">Why it works:</span> ${t.why}</p>
+      </div>`).join("");
+    return `
+      <div class="card hairline rounded-2xl p-6 sm:p-7 mb-6 vignette">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="display text-2xl font-semibold" style="color: var(--ink);">${PILLAR_META[p].name}</h4>
+          <span class="font-semibold text-lg" style="color:${color}">${leak}% growth area</span>
+        </div>
+        <div class="w-full h-2.5 rounded-full overflow-hidden mb-4" style="background: rgba(0,0,0,0.4);">
+          <div class="bar-fill h-full rounded-full" style="width:0%; background:${color}" data-target="${leak}"></div>
+        </div>
+        <p class="text-[15px] leading-relaxed" style="color: var(--ink-soft);">${pillarParagraph(p, leak)}</p>
+        <p class="gold-text text-[11px] font-semibold tracking-[0.2em] uppercase mt-6 mb-1">Your next moves</p>
+        ${tipsBlock}
+      </div>`;
+  }).join("");
+
+  const tl = tierLabel(s.grandPct);
+
+  const report = document.getElementById("screen-report");
+  report.innerHTML = `
+    <div class="text-center mb-12">
+      <p class="gold-text tracking-[0.32em] text-[11px] font-semibold mb-4">YOUR GENESIS REPORT</p>
+      <h2 class="display text-4xl sm:text-5xl font-bold gold-text leading-tight">The Genesis Health Assessment</h2>
+      <div class="flex items-center justify-center gap-3 my-6">
+        <span class="block h-px w-10" style="background: var(--gold-line);"></span>
+        <span class="gold-text text-xs">✦</span>
+        <span class="block h-px w-10" style="background: var(--gold-line);"></span>
+      </div>
+      <div class="display text-[88px] sm:text-[104px] font-bold leading-none gold-text">${s.grandPct}<span class="text-4xl align-top">%</span></div>
+      <p class="display text-2xl italic mt-2" style="color: var(--ink);">${tl.name}</p>
+      <p class="mt-1 text-sm" style="color: var(--ink-mute);">${tl.line}</p>
+      <p class="mt-4 text-sm" style="color: var(--ink-mute);">Overall Temple Integrity · ${s.totalPts} of ${s.grandMax} points</p>
+      <div class="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-full hairline" style="background: rgba(0,0,0,0.2);">
+        <span class="gold-text text-base">✉</span>
+        <span class="text-sm" style="color: var(--ink-soft);">A copy of this full report is on its way to <span class="gold-text font-semibold">${state.lead.email}</span></span>
+      </div>
+    </div>
+
+    <!-- TOP CTA (under the score, above the pillars) -->
+    <div class="rounded-3xl p-7 sm:p-9 text-center mb-12 vignette" style="background: linear-gradient(180deg, var(--forest-soft), var(--forest)); border: 1px solid var(--gold-2);">
+      <h3 class="display text-2xl sm:text-3xl font-bold gold-text leading-tight mb-4">Ready to turn this report into real, lasting change?</h3>
+      <p class="text-[15px] leading-relaxed max-w-lg mx-auto mb-6" style="color: var(--ink-soft);">
+        Book a free call to discover our <span class="gold-text font-semibold">GodHealth Premium Coaching Program</span>. Robin's team will walk through your results with you and show you the path forward — with full integrity, no pressure, and no obligation.
+      </p>
+      <a href="${CALENDLY_URL}" target="_blank" rel="noopener"
+         class="gold-fill inline-block font-semibold text-[18px] px-10 py-4 rounded-2xl transition-all"
+         style="box-shadow: 0 20px 50px -20px rgba(217,180,90,0.6);">
+        Claim Your Free Strategy Call
+      </a>
+    </div>
+
+    <!-- SECTION B: PILLARS + TIPS -->
+    <div class="mb-2">
+      <h3 class="display text-3xl font-semibold gold-text mb-1">Your Three Pillars</h3>
+      <p class="text-sm mb-6" style="color: var(--ink-mute);">Sorted from your biggest growth area down to your strongest pillar — with the exact moves to grow in each one.</p>
+    </div>
+    ${pillarsHTML}
+
+    <!-- SECTION D: FULL CTA (under the pillars) -->
+    <div class="rounded-3xl p-8 sm:p-11 text-center mt-12 vignette" style="background: linear-gradient(180deg, var(--forest-soft), var(--forest)); border: 1px solid var(--gold-2);">
+      <h3 class="display text-3xl sm:text-4xl font-bold gold-text leading-tight mb-5">This report showed you your growth areas. The next step is to grow in them — for good.</h3>
+      <p class="text-[16px] leading-relaxed max-w-xl mx-auto mb-3" style="color: var(--ink);">
+        Right now you stand at a crossroads. One road is the one you already know: another year of the same battles, the same fatigue, the same distance from the person God created you to be.
+      </p>
+      <p class="text-[16px] leading-relaxed max-w-xl mx-auto mb-3" style="color: var(--ink);">
+        The other road begins with a single, honest decision. In one focused conversation, Robin's team will turn this report into a clear, personal blueprint — the exact path to reclaim your body, your discipline, and your walk with God, and to hold it for the rest of your life.
+      </p>
+      <p class="text-[16px] leading-relaxed max-w-xl mx-auto mb-8" style="color: var(--ink-soft);">
+        Through our <span class="gold-text font-semibold">GodHealth Premium Coaching Program</span>, Robin's team will turn this report into a clear, personal blueprint — the exact path to reclaim your body, your discipline, and your walk with God. You were never meant to fight alone, and you were never meant to stay where you are. <span class="gold-text font-semibold">If you feel the pull to change, that is the moment to honor it.</span>
+      </p>
+      <a href="${CALENDLY_URL}" target="_blank" rel="noopener"
+         class="gold-fill inline-block font-semibold text-[19px] px-12 py-5 rounded-2xl transition-all"
+         style="box-shadow: 0 20px 50px -20px rgba(217,180,90,0.6);">
+        Claim Your Free Strategy Call
+      </a>
+      <p class="mt-4 text-sm" style="color: var(--ink-mute);">A private call to explore the GodHealth Premium Coaching Program · No pressure, no obligation — just clarity</p>
+      <div id="calendly-inline-widget" class="mt-9 rounded-2xl overflow-hidden hairline min-h-[480px]" data-url="${CALENDLY_URL}" style="background: rgba(0,0,0,0.2);">
+        <div class="flex items-center justify-center h-[480px] text-sm px-6 text-center" style="color: var(--ink-mute);">
+          Calendly booking widget loads here. Add your real Calendly URL in the CONFIG block at the top of the file.
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("quizContainer").innerHTML = "";
+  report.classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+
+  setTimeout(()=>{
+    report.querySelectorAll(".bar-fill").forEach(b=> b.style.width = b.dataset.target + "%");
+  }, 250);
+
+  loadCalendly();
+}
+
+function loadCalendly(){
+  if(!CALENDLY_URL || CALENDLY_URL.includes("YOUR-LINK")) return;
+  const link = document.createElement("link");
+  link.rel="stylesheet"; link.href="https://assets.calendly.com/assets/external/widget.css";
+  document.head.appendChild(link);
+  const script = document.createElement("script");
+  script.src="https://assets.calendly.com/assets/external/widget.js";
+  script.onload = ()=>{
+    const el = document.getElementById("calendly-inline-widget");
+    el.innerHTML="";
+    if(window.Calendly) window.Calendly.initInlineWidget({ url:CALENDLY_URL, parentElement:el });
+  };
+  document.body.appendChild(script);
+}
+</script>
+</body>
+</html>
