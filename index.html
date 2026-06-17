@@ -60,14 +60,19 @@
     border: 1px solid rgba(217,180,90,0.22);
     background: linear-gradient(180deg, rgba(217,180,90,0.03), rgba(0,0,0,0.12));
   }
-  .opt:hover { border-color: var(--gold-2); transform: translateY(-2px); box-shadow: 0 10px 30px -12px rgba(217,180,90,0.35); }
+  @media (hover: hover) {
+    .opt:hover { border-color: var(--gold-2); transform: translateY(-2px); box-shadow: 0 10px 30px -12px rgba(217,180,90,0.35); }
+    .opt:hover .dot { border-color: var(--gold-2); }
+  }
   .opt.selected { border-color: var(--gold-2); background: linear-gradient(180deg, rgba(217,180,90,0.12), rgba(217,180,90,0.04)); }
   .opt .dot { transition: all 0.22s ease; }
-  .opt:hover .dot, .opt.selected .dot { border-color: var(--gold-2); }
+  .opt.selected .dot { border-color: var(--gold-2); }
   .opt.selected .dot { background: linear-gradient(135deg, var(--gold-2), var(--gold-3)); }
 
   .scale-btn { transition: all 0.18s ease; border: 1px solid rgba(217,180,90,0.28); }
-  .scale-btn:hover { border-color: var(--gold-2); transform: translateY(-2px); }
+  @media (hover: hover) {
+    .scale-btn:hover { border-color: var(--gold-2); transform: translateY(-2px); }
+  }
   .scale-btn.selected { background: linear-gradient(135deg, var(--gold-1), var(--gold-3)); color: #2a1c05; border-color: var(--gold-2); font-weight: 600; }
 
   input::placeholder { color: var(--ink-mute); }
@@ -97,44 +102,21 @@
   <div id="progressBar" class="progress-fill h-full" style="width:0%; background: linear-gradient(90deg, var(--gold-1), var(--gold-3));"></div>
 </div>
 
-<div class="max-w-2xl mx-auto px-5 py-12 sm:py-20">
+<div class="max-w-2xl mx-auto px-4 sm:px-5 py-8 sm:py-16">
 
   <!-- ================= SCREEN 1: REGISTRATION ================= -->
   <section id="screen-reg" class="screen active">
-    <div class="text-center mb-10">
-      <div class="flex justify-center mb-5">
-        <svg width="34" height="46" viewBox="0 0 34 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs>
-            <linearGradient id="crossGold" x1="0" y1="0" x2="34" y2="46" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#b88a2e"/>
-              <stop offset="0.5" stop-color="#f1d693"/>
-              <stop offset="1" stop-color="#d9b45a"/>
-            </linearGradient>
-          </defs>
-          <rect x="13" y="0" width="8" height="46" rx="2" fill="url(#crossGold)"/>
-          <rect x="0" y="12" width="34" height="8" rx="2" fill="url(#crossGold)"/>
-        </svg>
-      </div>
-      <p class="gold-text tracking-[0.4em] text-[11px] sm:text-xs font-semibold mb-5">GODHEALTH</p>
-      <h1 class="display text-5xl sm:text-6xl font-bold leading-[1.05] gold-text">The Genesis<br>Health Assessment</h1>
-      <div class="flex items-center justify-center gap-3 my-6">
-        <span class="block h-px w-10" style="background: var(--gold-line);"></span>
-        <span class="gold-text text-xs tracking-[0.2em]">✦</span>
-        <span class="block h-px w-10" style="background: var(--gold-line);"></span>
-      </div>
-      <p class="display text-xl sm:text-2xl italic" style="color: var(--ink-soft);">The Biblical &amp; Biochemical Scan to reveal your Temple's hidden growth areas.</p>
-      <p class="text-[17px] leading-relaxed max-w-md mx-auto mt-5" style="color: var(--ink);">
-        In just 5 minutes, discover exactly where your <span class="gold-text font-semibold">Physical</span>, <span class="gold-text font-semibold">Mental</span>, and <span class="gold-text font-semibold">Spiritual</span> health stand today — and receive a personalized roadmap to step into the strongest, most aligned version of the person God created you to be.
+    <div class="text-center mb-7">
+      <p class="gold-text tracking-[0.4em] text-[11px] sm:text-xs font-semibold mb-4">GODHEALTH</p>
+      <h1 class="display text-[40px] sm:text-5xl font-bold leading-[1.06] gold-text">Why You Still Feel<br>Tired, Stuck &amp; Far From God</h1>
+      <p class="display text-lg sm:text-xl italic mt-4" style="color: var(--ink-soft);">The Biblical &amp; Biochemical Scan that exposes the hidden leaks draining your body, mind, and spirit.</p>
+      <p class="text-[15px] leading-relaxed max-w-md mx-auto mt-4" style="color: var(--ink);">
+        In 5 minutes, see exactly where your <span class="gold-text font-semibold">Physical</span>, <span class="gold-text font-semibold">Mental</span>, and <span class="gold-text font-semibold">Spiritual</span> health really stand — and what's been holding you back.
       </p>
-      <div class="mt-7 max-w-md mx-auto">
-        <p class="display italic text-[18px] leading-snug" style="color: var(--ink);">"Beloved, I wish above all things that thou mayest prosper and be in health, even as thy soul prospereth."</p>
-        <p class="gold-text text-[12px] font-semibold tracking-[0.12em] mt-2">3 John 1:2 (KJV)</p>
-      </div>
     </div>
 
-    <div class="card hairline rounded-3xl p-7 sm:p-9 vignette">
-      <p class="text-center mb-7" style="color: var(--ink-soft);">Enter your details to begin. Your personalized report is composed the moment you finish.</p>
-      <div class="space-y-5">
+    <div class="card hairline rounded-3xl p-6 sm:p-8 vignette">
+      <div class="space-y-4">
         <div>
           <label class="block text-[13px] gold-text mb-2 font-medium tracking-wide">FIRST NAME</label>
           <input id="regName" type="text" placeholder="Your first name" class="w-full rounded-2xl px-5 py-4 text-base hairline" style="background: rgba(0,0,0,0.22); color: var(--ink);">
@@ -149,10 +131,15 @@
         </div>
       </div>
       <p id="regError" class="text-red-300 text-sm mt-4 hidden"></p>
-      <button id="startBtn" class="gold-fill w-full mt-7 font-semibold text-lg py-4 rounded-2xl transition-all shadow-xl" style="box-shadow: 0 18px 40px -18px rgba(217,180,90,0.6);">
+      <button id="startBtn" class="gold-fill w-full mt-6 font-semibold text-lg py-4 rounded-2xl transition-all shadow-xl" style="box-shadow: 0 18px 40px -18px rgba(217,180,90,0.6);">
         Start Assessment
       </button>
-      <p class="text-center mt-5 text-xs" style="color: var(--ink-mute);">15 quick questions · about 5 minutes · your data stays private</p>
+      <p class="text-center mt-4 text-xs" style="color: var(--ink-mute);">15 quick questions · about 5 minutes · your data stays private</p>
+    </div>
+
+    <div class="mt-6 max-w-md mx-auto text-center">
+      <p class="display italic text-[17px] leading-snug" style="color: var(--ink-soft);">"Beloved, I wish above all things that thou mayest prosper and be in health, even as thy soul prospereth."</p>
+      <p class="gold-text text-[12px] font-semibold tracking-[0.12em] mt-2">3 John 1:2 (KJV)</p>
     </div>
   </section>
 
@@ -173,10 +160,10 @@ const QUESTIONS = [
     title:"How is your daily walk with God right now?",
     verse:{ ref:"John 15:5", text:"I am the vine, ye are the branches: He that abideth in me, and I in him, the same bringeth forth much fruit: for without me ye can do nothing." },
     options:[
-      {pts:1,text:"I feel far from God. I rarely pray or read His Word, and my faith feels distant."},
-      {pts:2,text:"I believe in Jesus, but my prayer life and time in the Word are inconsistent."},
-      {pts:3,text:"I pray and read the Bible often, but not yet as a steady daily rhythm."},
-      {pts:4,text:"Every day I am grounded in the Word, in prayer, and in a holy walk with Jesus."}
+      {pts:1,text:"I don't believe in Jesus Christ. I feel far from God and rarely pray or read His Word."},
+      {pts:2,text:"I believe in Jesus, but my walk with God is inconsistent and my prayer life and time in the Word come and go."},
+      {pts:3,text:"Jesus Christ is my Lord and Saviour. I pray and read the Bible often, but I know I can seek God more and need to spend more time with the Lord."},
+      {pts:4,text:"Jesus Christ is my Lord and Saviour. I know my identity in Christ and walk in it. Every day I am grounded in the Word, in prayer, and I take up my cross daily."}
     ]},
   { id:"q2", pillars:["mental","spiritual"],
     title:"When a setback or hard moment hits, what happens to your faith?",
@@ -227,10 +214,10 @@ const QUESTIONS = [
     title:"How well do you handle stress and your thoughts?",
     verse:{ ref:"Philippians 4:6-7", text:"Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God." },
     options:[
-      {pts:1,text:"I feel overwhelmed and anxious most of the time."},
-      {pts:2,text:"I worry a lot and find it hard to quiet my mind."},
-      {pts:3,text:"I manage stress fairly well, but it still gets the better of me at times."},
-      {pts:4,text:"I stay calm and clear-minded, and I bring my worries to God."}
+      {pts:1,text:"I feel overwhelmed and anxious most of the time, and I numb it with my phone, TV, or social media."},
+      {pts:2,text:"I worry a lot and find it hard to quiet my mind, so I often escape into my phone or screens."},
+      {pts:3,text:"I manage stress fairly well, but I still spend too much time on my phone, TV, or social media to switch off."},
+      {pts:4,text:"I take serious moments of rest to silence my thoughts and relax, and I bring my worries to God."}
     ]},
   { id:"q8", pillars:["mental","spiritual"],
     title:"How much do the people around you support your growth?",
@@ -278,13 +265,13 @@ const QUESTIONS = [
       {pts:4,text:"I wake, eat, and sleep on a steady daily rhythm that keeps me strong."}
     ]},
   { id:"q14", pillars:["physical","mental"],
-    title:"Do you use any simple tools to boost your body and mind?",
+    title:"Do you use any simple biohacking tools to boost your body and mind?",
     verse:{ ref:"Proverbs 18:15", text:"The heart of the prudent getteth knowledge; and the ear of the wise seeketh knowledge." },
     options:[
       {pts:1,text:"No, I don't use anything like that."},
       {pts:2,text:"I've heard of things like cold showers or breathing, but don't use them."},
-      {pts:3,text:"I try a few habits like cold water or breathwork now and then."},
-      {pts:4,text:"I regularly use tools like cold exposure, sunlight, or breathwork to feel my best."}
+      {pts:3,text:"I try a few habits, for example: cold exposure, sauna, grounding, breathwork, or supplements now and then."},
+      {pts:4,text:"I regularly use tools like cold exposure, sauna, grounding, breathwork, or supplements in my lifestyle to feel my best."}
     ]},
   { id:"q15", pillars:["mental","spiritual"],
     title:"How often do you serve others and spend time with loved ones?",
@@ -437,30 +424,34 @@ function renderQuestion(){
 }
 
 function renderScale(q){
-  let grid = `<div class="grid grid-cols-5 gap-2.5 mb-5">`;
+  let grid = `<div class="grid grid-cols-5 gap-2 sm:gap-2.5 mb-5">`;
   for(let n=1;n<=10;n++){
-    grid += `<button class="scale-btn rounded-2xl py-4 text-lg font-medium" data-val="${n}" style="color: var(--ink);">${n}</button>`;
+    grid += `<button class="scale-btn rounded-xl sm:rounded-2xl py-3.5 sm:py-4 text-base sm:text-lg font-medium" data-val="${n}" style="color: var(--ink);">${n}</button>`;
   }
   grid += `</div>`;
   grid += `<div id="scaleLabel" class="min-h-[80px] rounded-2xl px-5 py-4 text-center hairline" style="background: rgba(0,0,0,0.2);">
              <p class="text-sm" style="color: var(--ink-mute);">Select a number to see what it means.</p>
            </div>`;
+  grid += `<button id="completeBtn" class="gold-fill w-full mt-5 font-semibold text-lg py-4 rounded-2xl transition-all hidden" style="box-shadow: 0 18px 40px -18px rgba(217,180,90,0.6);">Complete my assessment</button>`;
   setTimeout(()=>{
     const labelBox = document.getElementById("scaleLabel");
+    const completeBtn = document.getElementById("completeBtn");
+    const showLabel = (val)=>{
+      const m = q.scaleTexts[val];
+      labelBox.innerHTML = `<p class="gold-text font-semibold mb-1 tracking-wide">${val} · ${m.label}</p><p class="text-sm leading-snug" style="color: var(--ink-soft);">${m.text}</p>`;
+    };
     document.querySelectorAll(".scale-btn").forEach(b=>{
       const val = +b.dataset.val;
-      const showLabel = ()=>{
-        const m = q.scaleTexts[val];
-        labelBox.innerHTML = `<p class="gold-text font-semibold mb-1 tracking-wide">${val} · ${m.label}</p><p class="text-sm leading-snug" style="color: var(--ink-soft);">${m.text}</p>`;
-      };
-      b.addEventListener("mouseenter", showLabel);
       b.addEventListener("click", ()=>{
         document.querySelectorAll(".scale-btn").forEach(x=>x.classList.remove("selected"));
         b.classList.add("selected");
-        showLabel();
+        showLabel(val);
         state.answers.q10 = { value:val, pts:val };
-        setTimeout(()=> finishAssessment(), 420);
+        completeBtn.classList.remove("hidden");
       });
+    });
+    completeBtn.addEventListener("click", ()=>{
+      if(state.answers.q10) finishAssessment();
     });
   },0);
   return grid;
@@ -807,7 +798,7 @@ function tipsForPillar(pillar){
   const qs = PILLAR_QUESTIONS[pillar];
   const bank = PILLAR_TIPS[pillar];
   const tips = [];
-  const CAP = 3;
+  const CAP = 2;
   // 1) low-scored questions first (worst first)
   qs.filter(q=> state.answers[q] && state.answers[q].pts<=2)
     .sort((a,b)=> state.answers[a].pts - state.answers[b].pts)
@@ -831,20 +822,22 @@ function leakColor(leak){
 }
 
 /* ============================================================ FINISH & REPORT ============================================================ */
-function finishAssessment(){
+function finishAssessment(skipDispatch){
   const s = computeScores();
   setProgress();
 
-  fireWebhook({
-    event:"assessment_complete",
-    timestamp:new Date().toISOString(),
-    name:state.lead.name, email:state.lead.email, phone:state.lead.phone,
-    grand_percentage:s.grandPct, total_points:s.totalPts, max_points:s.grandMax,
-    spiritual_leak:s.leaks.spiritual, mental_leak:s.leaks.mental, physical_leak:s.leaks.physical,
-    spiritual_points:s.pillarPts.spiritual, mental_points:s.pillarPts.mental, physical_points:s.pillarPts.physical,
-    alignment_score:s.scalePts,
-    answers:Object.fromEntries(Object.entries(state.answers).map(([k,v])=>[k, v.text||v.value]))
-  });
+  if(!skipDispatch){
+    fireWebhook({
+      event:"assessment_complete",
+      timestamp:new Date().toISOString(),
+      name:state.lead.name, email:state.lead.email, phone:state.lead.phone,
+      grand_percentage:s.grandPct, total_points:s.totalPts, max_points:s.grandMax,
+      spiritual_leak:s.leaks.spiritual, mental_leak:s.leaks.mental, physical_leak:s.leaks.physical,
+      spiritual_points:s.pillarPts.spiritual, mental_points:s.pillarPts.mental, physical_points:s.pillarPts.physical,
+      alignment_score:s.scalePts,
+      answers:Object.fromEntries(Object.entries(state.answers).map(([k,v])=>[k, v.text||v.value]))
+    });
+  }
 
   const sortedPillars = ["spiritual","mental","physical"].sort((a,b)=> s.leaks[b]-s.leaks[a]);
   const pillarsHTML = sortedPillars.map(p=>{
@@ -879,29 +872,23 @@ function finishAssessment(){
 
   const report = document.getElementById("screen-report");
   report.innerHTML = `
-    <div class="text-center mb-12">
+    <div class="text-center mb-8">
       <p class="gold-text tracking-[0.32em] text-[11px] font-semibold mb-4">YOUR GENESIS REPORT</p>
-      <h2 class="display text-4xl sm:text-5xl font-bold gold-text leading-tight">The Genesis Health Assessment</h2>
-      <div class="flex items-center justify-center gap-3 my-6">
-        <span class="block h-px w-10" style="background: var(--gold-line);"></span>
-        <span class="gold-text text-xs">✦</span>
-        <span class="block h-px w-10" style="background: var(--gold-line);"></span>
-      </div>
-      <div class="display text-[88px] sm:text-[104px] font-bold leading-none gold-text">${s.grandPct}<span class="text-4xl align-top">%</span></div>
+      <div class="display text-[76px] sm:text-[92px] font-bold leading-none gold-text">${s.grandPct}<span class="text-4xl align-top">%</span></div>
       <p class="display text-2xl italic mt-2" style="color: var(--ink);">${tl.name}</p>
       <p class="mt-1 text-sm" style="color: var(--ink-mute);">${tl.line}</p>
-      <p class="mt-4 text-sm" style="color: var(--ink-mute);">Overall Temple Integrity · ${s.totalPts} of ${s.grandMax} points</p>
-      <div class="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-full hairline" style="background: rgba(0,0,0,0.2);">
+      <p class="mt-3 text-sm" style="color: var(--ink-mute);">Overall Temple Integrity · ${s.totalPts} of ${s.grandMax} points</p>
+      <div class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-full hairline" style="background: rgba(0,0,0,0.2);">
         <span class="gold-text text-base">✉</span>
-        <span class="text-sm" style="color: var(--ink-soft);">A copy of this full report is on its way to <span class="gold-text font-semibold">${state.lead.email}</span></span>
+        <span class="text-sm" style="color: var(--ink-soft);">A copy of this report is on its way to <span class="gold-text font-semibold">${state.lead.email}</span></span>
       </div>
     </div>
 
-    <!-- TOP CTA (under the score, above the pillars) -->
-    <div class="rounded-3xl p-7 sm:p-9 text-center mb-12 vignette" style="background: linear-gradient(180deg, var(--forest-soft), var(--forest)); border: 1px solid var(--gold-2);">
-      <h3 class="display text-2xl sm:text-3xl font-bold gold-text leading-tight mb-4">Ready to turn this report into real, lasting change?</h3>
-      <p class="text-[15px] leading-relaxed max-w-lg mx-auto mb-6" style="color: var(--ink-soft);">
-        Book a free call to discover our <span class="gold-text font-semibold">GodHealth Premium Coaching Program</span>. Robin's team will walk through your results with you and show you the path forward — with full integrity, no pressure, and no obligation.
+    <!-- TOP CTA (immediately under the score, visible without scrolling) -->
+    <div class="rounded-3xl p-6 sm:p-8 text-center mb-12 vignette" style="background: linear-gradient(180deg, var(--forest-soft), var(--forest)); border: 1px solid var(--gold-2);">
+      <h3 class="display text-2xl sm:text-3xl font-bold gold-text leading-tight mb-3">Ready to turn this report into lasting change?</h3>
+      <p class="text-[15px] leading-relaxed max-w-lg mx-auto mb-5" style="color: var(--ink-soft);">
+        Book a free call to discover our <span class="gold-text font-semibold">GodHealth Premium Coaching Program</span> — Robin's team will walk through your results with you, with full integrity and no obligation.
       </p>
       <a href="${CALENDLY_URL}" target="_blank" rel="noopener"
          class="gold-fill inline-block font-semibold text-[18px] px-10 py-4 rounded-2xl transition-all"
@@ -923,12 +910,26 @@ function finishAssessment(){
       <p class="text-[16px] leading-relaxed max-w-xl mx-auto mb-3" style="color: var(--ink);">
         Right now you stand at a crossroads. One road is the one you already know: another year of the same battles, the same fatigue, the same distance from the person God created you to be.
       </p>
-      <p class="text-[16px] leading-relaxed max-w-xl mx-auto mb-3" style="color: var(--ink);">
-        The other road begins with a single, honest decision. In one focused conversation, Robin's team will turn this report into a clear, personal blueprint — the exact path to reclaim your body, your discipline, and your walk with God, and to hold it for the rest of your life.
-      </p>
       <p class="text-[16px] leading-relaxed max-w-xl mx-auto mb-8" style="color: var(--ink-soft);">
-        Through our <span class="gold-text font-semibold">GodHealth Premium Coaching Program</span>, Robin's team will turn this report into a clear, personal blueprint — the exact path to reclaim your body, your discipline, and your walk with God. You were never meant to fight alone, and you were never meant to stay where you are. <span class="gold-text font-semibold">If you feel the pull to change, that is the moment to honor it.</span>
+        The other road begins with one honest decision. In a single conversation, Robin's team will turn this report into a clear, personal blueprint to reclaim your body, your discipline, and your walk with God — and to hold it for the rest of your life. <span class="gold-text font-semibold">If you feel the pull to change, that is the moment to honor it.</span>
       </p>
+
+      <!-- Robin bio -->
+      <div class="rounded-2xl p-6 mb-8 text-left max-w-xl mx-auto" style="background: rgba(0,0,0,0.2); border: 1px solid var(--gold-line);">
+        <p class="gold-text text-[11px] font-semibold tracking-[0.2em] uppercase mb-3">Who you'll be guided by</p>
+        <p class="text-[15px] leading-relaxed" style="color: var(--ink);">
+          <span class="gold-text font-semibold">Robin</span> is a committed follower of Jesus Christ, a certified lifestyle coach, and a former top-level athlete who took <span class="gold-text font-semibold">2nd place at the Dutch National Championships in hurdles</span>. He has already helped <span class="gold-text font-semibold">100+ people</span> transform their health in body, mind, and spirit.
+        </p>
+      </div>
+
+      <!-- Unique formula -->
+      <div class="rounded-2xl p-6 mb-8 text-left max-w-xl mx-auto" style="background: rgba(0,0,0,0.2); border: 1px solid var(--gold-line);">
+        <p class="gold-text text-[11px] font-semibold tracking-[0.2em] uppercase mb-3">Our one-of-a-kind formula</p>
+        <p class="text-[15px] leading-relaxed" style="color: var(--ink);">
+          GodHealth is built on a formula you won't find anywhere else on earth: we combine <span class="gold-text font-semibold">ancient Biblical principles</span> with <span class="gold-text font-semibold">modern health science</span> and <span class="gold-text font-semibold">elite-sport expertise</span>. We are the only ones in the world coaching this way — and it's how lasting transformation finally becomes possible.
+        </p>
+      </div>
+
       <a href="${CALENDLY_URL}" target="_blank" rel="noopener"
          class="gold-fill inline-block font-semibold text-[19px] px-12 py-5 rounded-2xl transition-all"
          style="box-shadow: 0 20px 50px -20px rgba(217,180,90,0.6);">
@@ -941,6 +942,10 @@ function finishAssessment(){
         </div>
       </div>
     </div>
+
+    <div class="text-center mt-8">
+      <button id="startOverBtn" class="text-sm transition-colors" style="color: var(--ink-mute);">Take the assessment again</button>
+    </div>
   `;
 
   document.getElementById("quizContainer").innerHTML = "";
@@ -951,7 +956,19 @@ function finishAssessment(){
     report.querySelectorAll(".bar-fill").forEach(b=> b.style.width = b.dataset.target + "%");
   }, 250);
 
+  const startOver = document.getElementById("startOverBtn");
+  if(startOver) startOver.addEventListener("click", clearSavedResult);
+
   loadCalendly();
+
+  // Save completed result on this device so the person can return without redoing the test
+  try {
+    localStorage.setItem("godhealth_genesis_v1", JSON.stringify({
+      lead: state.lead,
+      answers: state.answers,
+      savedAt: new Date().toISOString()
+    }));
+  } catch(e){ /* storage unavailable — fail silently */ }
 }
 
 function loadCalendly(){
@@ -968,6 +985,29 @@ function loadCalendly(){
   };
   document.body.appendChild(script);
 }
+
+/* On load: if a completed assessment is saved on this device, restore it so the
+   person sees their report again without redoing the test. */
+function restoreSavedResult(){
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem("godhealth_genesis_v1")); }
+  catch(e){ return; }
+  if(!saved || !saved.answers || !saved.answers.q10) return;
+  // rebuild state and re-render the report (skip the webhook dispatch)
+  state.lead = saved.lead || {};
+  state.answers = saved.answers;
+  state.current = QUESTIONS.length;
+  document.querySelectorAll(".screen").forEach(sc=> sc.classList.remove("active"));
+  finishAssessment(true);
+}
+
+function clearSavedResult(){
+  try { localStorage.removeItem("godhealth_genesis_v1"); } catch(e){}
+  location.reload();
+}
+
+restoreSavedResult();
+
 </script>
 </body>
 </html>
